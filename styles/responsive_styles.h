@@ -22,13 +22,17 @@ using ResponsiveLockupL =
   LockupTrL<AlphaL<COLOR, Bump<Scale<BladeAngle<>,Int<TOP>,Int<BOTTOM>>,Int<SIZE>>>,
             TR1,
             TR2,
-            SaberBase::LOCKUP_NORMAL>; 
+            SaberBase::LOCKUP_NORMAL>;
 
 // ResponsiveDragL<DRAG COLOR, TRANSTION1, TRANSITION2, SIZE1, SIZE2>
 // Implements Drag that will increase or decrease in size based on turning hilt
 // TRANSITION1 & TRANSITION2 = transition Begin & End
 // SIZE1 & SIZE2 control limits for DRAG size with TwistAngle
-template<class COLOR, class TR1 = TrInstant, class TR2 = TrInstant, int SIZE1 = 2000, int SIZE2 = 10000>
+template<class COLOR,
+         class TR1 = TrInstant,
+         class TR2 = TrInstant,
+         int SIZE1 = 2000,
+         int SIZE2 = 10000>
 using ResponsiveDragL =
   LockupTrL<AlphaL<COLOR, SmoothStep<Int<32000>,Scale<TwistAngle<>,Int<SIZE1>,Int<SIZE2>>>>,
             TR1,
@@ -36,8 +40,8 @@ using ResponsiveDragL =
             SaberBase::LOCKUP_DRAG>;
 
 // ResponsiveMeltL<MELT COLOR, TRANSITION1, TRANSITION2, SIZE1, SIZE2>
-// Implements Melt effect for cutting through object, size will change to mimic metal heating and intensity
-// will increase or decrease based on turning hilt
+// Implements Melt effect for cutting through object, size will change to mimic metal
+// heating and intensity will increase or decrease based on turning hilt
 // TRANSITION1 & TRANSITION2 = transition Begin & End
 // SIZE1 & SIZE2 control MELT area limits for TwistAngle
 template<class COLOR = Mix<TwistAngle<>,OrangeRed,Red>,
@@ -86,65 +90,70 @@ using ResponsiveClashL =
                              TR2>,
                     EFFECT_CLASH>;
 
-// ResponsiveBlastL<BLAST COLOR, FADEOUT_MS, WAVE_SIZE, WAVE_SPEED, TOP, BOTTOM>
+// ResponsiveBlastL<BLAST COLOR, FADEOUT_MS, WAVE_SIZE, WAVE_SPEED, TOP, BOTTOM, EFFECT>
 // Implements Blast effect that will move based on angle of the blade instead of random location Blast will impact and disperse along the blade from original position
 // FADE = fade time ms
 // WAVE_SIZE = size
 // WAVE MS = speed ms
 // TOP = uppermost Blast position limit, BOTTOM = lowermost Blast position limit, 32768 = tip, 0 = hilt
+// EFFECT = effect type, defaults to EFFECT_BLAST
 
 template<class COLOR,
          int FADE = 400,
          int SIZE = 100,
          int SPEED = 400,
          int TOP = 28000,
-         int BOTTOM = 8000
-         >
+         int BOTTOM = 8000,
+         BladeEffectType EFFECT = EFFECT_BLAST>
 using ResponsiveBlastL =
-         AlphaL<MultiTransitionEffectL<
-                  TrWaveX<COLOR, Int<FADE>, Int<SIZE>, Int<SPEED>, Scale<BladeAngle<>, Int<TOP>, Int<BOTTOM>>>,EFFECT_BLAST>, 
-                  Bump<Scale<BladeAngle<>,Int<TOP>,Int<BOTTOM>>,Int<24000>>>;
+    AlphaL<
+         MultiTransitionEffectL<
+             TrWaveX<COLOR, Int<FADE>, Int<SIZE>, Int<SPEED>, Scale<BladeAngle<>, Int<TOP>, Int<BOTTOM>>>,
+             EFFECT>,
+         Bump<Scale<BladeAngle<>,Int<TOP>,Int<BOTTOM>>,Int<24000>>>;
 
-// ResponsiveBlastWaveL<BLAST COLOR, FADEOUT_MS, WAVE_SIZE, WAVE_SPEED, TOP, BOTTOM>
+// ResponsiveBlastWaveL<BLAST COLOR, FADEOUT_MS, WAVE_SIZE, WAVE_SPEED, TOP, BOTTOM, EFFECT>
 // Implements Blast effect that will move based on angle of the blade instead of random location Blast will impact and split up and down the length of the blade from original position
 // FADE = fade time ms
 // WAVE_SIZE = size
 // WAVE MS = speed ms
 // TOP = uppermost Blast position limit, BOTTOM = lowermost Blast position limit, 32768 = tip, 0 = hilt
+// EFFECT = effect type, defaults to EFFECT_BLAST
 
 template<class COLOR,
          int FADE = 400,
          int SIZE = 100,
          int SPEED = 400,
          int TOP = 28000,
-         int BOTTOM = 8000
-         >
+         int BOTTOM = 8000,
+         BladeEffectType EFFECT = EFFECT_BLAST>
 using ResponsiveBlastWaveL =
-         MultiTransitionEffectL<
-                  TrWaveX<COLOR, Int<FADE>, Int<SIZE>, Int<SPEED>, Scale<BladeAngle<>, 
-                           Int<TOP>, 
-                           Int<BOTTOM>>>, 
-                           EFFECT_BLAST>;
+    MultiTransitionEffectL<
+         TrWaveX<COLOR, Int<FADE>, Int<SIZE>, Int<SPEED>,
+              Scale<BladeAngle<>,
+                    Int<TOP>,
+                    Int<BOTTOM>>>,
+         EFFECT>;
 
-
-// ResponsiveBlastFadeL<BLAST COLOR, SIZE, FADE, TOP, BOTTOM>
+// ResponsiveBlastFadeL<BLAST COLOR, SIZE, FADE, TOP, BOTTOM, EFFECT>
 // Implements Blast effect that will move based on angle of the blade instead of random location Blast will impact and Fade in position
 // SIZE controls blast size bump 0 ~ 32768
 // FADE = fade time ms
 // TOP = uppermost Blast position limit, BOTTOM = lowermost Blast position limit, 32768 = tip, 0 = hilt
+// EFFECT = effect type, defaults to EFFECT_BLAST
 
 template<class COLOR,
          int SIZE = 8000,
          int FADE = 400,
          int TOP = 28000,
-         int BOTTOM = 8000
-         >
+         int BOTTOM = 8000,
+         BladeEffectType EFFECT = EFFECT_BLAST>
 using ResponsiveBlastFadeL =
-         MultiTransitionEffectL<
-                  TrConcat<TrInstant, 
-                           AlphaL<COLOR, Bump<Scale<BladeAngle<>, Int<TOP>, Int<BOTTOM>>, Int<SIZE>>>,
-                           TrFade<FADE>>,
-                           EFFECT_BLAST>;
+    MultiTransitionEffectL<
+         TrConcat<TrInstant,
+                  AlphaL<COLOR, Bump<Scale<BladeAngle<>, Int<TOP>, Int<BOTTOM>>, Int<SIZE>>>,
+                  TrFade<FADE>>,
+         EFFECT>;
 
 // ResponsiveStabL<STAB COLOR, TRANSITION1, TRANSITION2, SIZE1, SIZE2>
 // Stab effect
