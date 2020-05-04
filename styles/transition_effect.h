@@ -16,7 +16,7 @@
 template<class TRANSITION, BladeEffectType EFFECT>
 class TransitionEffectL {
 public:
-  void run(BladeBase* blade) {
+  LayerRunResult run(BladeBase* blade) {
     if (effect_.Detect(blade)) {
       transition_.begin();
       run_ = true;
@@ -24,7 +24,22 @@ public:
     if (run_) {
       transition_.run(blade);
       if (transition_.done()) run_ = false;
+    } else {
+      switch (EFFECT) {
+	// This a list of effects that cannot occur after retraction is done.
+	case EFFECT_BOOT:
+	case EFFECT_PREON:
+	case EFFECT_IGNITION:
+	case EFFECT_RETRACTION:
+
+	  // NEWFONT is a special case, it CAN occur after retraction is done, but
+	  // we also power the blade on at that time, so it's fine.
+	case EFFECT_NEWFONT:
+	  return LayerRunResult::TRANSPARENT_UNTIL_IGNITION;
+	default: break;
+      }
     }
+    return LayerRunResult::UNKNOWN;
   }
   
 private:
