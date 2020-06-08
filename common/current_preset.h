@@ -76,8 +76,7 @@ public:
 	}
 	continue;
       }
-      if (!strcmp(variable, "installed")) continue;
-      if (!preset_count) return false;
+      if (!preset_count) continue;
       if (f->Peek() != '=') continue;
       f->Read();
       f->skipspace();
@@ -198,9 +197,9 @@ public:
     if (OpenPresets(&f2, "presets.tmp")) {
       uint8_t buf[512];
       // Found valid tmp file
+      f2.Seek(0);
       LSFS::Remove(ini_fn);
       f.Create(ini_fn);
-      f.write_key_value("installed", install_time);
       while (f2.Available()) {
 	int to_copy = std::min<int>(f2.Available(), sizeof(buf));
 	if (f2.Read(buf, to_copy) != to_copy ||
@@ -263,12 +262,7 @@ public:
     }
   }
 
-  // position = 0 -> first spot
-  // position = N -> last
-  // position = -1 -> delete
-  // To duplicate, set preset_num to -1
-  void SaveAt(int position) {
-    LOCK_SD(true);
+  void SaveAtLocked(int position) {
     FileReader f, out;
     if (!OpenPresets(&f, "presets.ini")) {
       if (!UpdateINI()) CreateINI();
@@ -302,6 +296,15 @@ public:
     out.Close();
     UpdateINI();
     preset_num = position;
+  }
+
+  // position = 0 -> first spot
+  // position = N -> last
+  // position = -1 -> delete
+  // To duplicate, set preset_num to -1
+  void SaveAt(int position) {
+    LOCK_SD(true);
+    SaveAtLocked(position);
     LOCK_SD(false);
   }
 
