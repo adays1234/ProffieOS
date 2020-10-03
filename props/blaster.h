@@ -5,6 +5,19 @@
 
 #define PROP_TYPE Blaster
 
+EFFECT(clipin);
+EFFECT(clipout);
+EFFECT(empty);
+EFFECT(full);
+EFFECT(jam);
+EFFECT(mode);
+EFFECT(plioff);
+EFFECT(plion);
+EFFECT(range);
+EFFECT(reload);
+EFFECT(stun);
+EFFECT(unjam);
+
 class Blaster : public PropBase {
 public:
   Blaster() : PropBase() {}
@@ -277,6 +290,33 @@ public:
         return true;
     }
     return false;
+  }
+
+  // Blaster effects, auto fire is handled by begin/end lockup
+  void SB_Effect(EffectType effect, float location) override {
+    switch (effect) {
+      case EFFECT_STUN: hybrid_font.PlayCommon(&SFX_stun); return;
+      case EFFECT_FIRE: hybrid_font.PlayCommon(&SFX_blast); return;
+      case EFFECT_CLIP_IN: hybrid_font.PlayCommon(&SFX_clipin); return;
+      case EFFECT_CLIP_OUT: hybrid_font.PlayCommon(&SFX_clipout); return;
+      case EFFECT_RELOAD: hybrid_font.PlayCommon(&SFX_reload); return;
+      case EFFECT_MODE:
+	if (SFX_mode) {
+	  hybrid_font.PlayCommon(&SFX_mode);
+	  return;
+	}
+	// TODO: would rather do a Talkie to speak the mode we're in after mode sound
+	beeper.Beep(0.05, 2000.0);
+	return;
+      case EFFECT_RANGE: hybrid_font.PlayCommon(&SFX_range); return;
+      case EFFECT_EMPTY: hybrid_font.PlayCommon(&SFX_empty); return;
+      case EFFECT_FULL: hybrid_font.PlayCommon(&SFX_full); return;
+      case EFFECT_JAM: hybrid_font.PlayCommon(&SFX_jam); return;
+      case EFFECT_UNJAM: hybrid_font.PlayCommon(&SFX_unjam); return;
+      case EFFECT_PLION: hybrid_font.PlayCommon(&SFX_plion); return;
+      case EFFECT_PLIOFF: hybrid_font.PlayCommon(&SFX_plioff); return;
+	
+    }
   }
 };
 
