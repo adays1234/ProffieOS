@@ -244,12 +244,12 @@ SaberFett263Buttons() : PropBase() {}
 
       case EVENTID(BUTTON_AUX, EVENT_CLICK_LONG, MODE_ON):
         swing_blast_ = true;
-        hybrid_font.SB_Blast();
+        hybrid_font.SB_Effect(EFFECT_BLAST, 0);
         return true;
 
       case EVENTID(BUTTON_NONE, EVENT_SWING, MODE_ON):
         if (swing_blast_) {
-          SaberBase::DoBlast();
+	  hybrid_font.SB_Effect(EFFECT_BLAST, 0);
         }
         return true;
 
@@ -331,7 +331,7 @@ SaberFett263Buttons() : PropBase() {}
          if (!battle_mode_) {
            battle_mode_ = true;
            // Force sound plays when entering Battle Mode
-           hybrid_font.SB_Force();
+	   hybrid_font.SB_Effect(EFFECT_FORCE, 0);
          } else {
            battle_mode_ = false;
            // Exit Color Change sound plays when exiting Battle Mode
