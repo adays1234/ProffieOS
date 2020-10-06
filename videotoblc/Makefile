@@ -1,6 +1,6 @@
-CFLAGS= -pthread -MD -ggdb
+CFLAGS= -pthread -MD -ggdb -O2
 CXXFLAGS=$(CFLAGS)
-LDFLAGS= -Wl,--no-as-needed  -lm -lpthread
+LDFLAGS=-lm -lpthread
 
 COMMON=
 HOST_COMMON=
