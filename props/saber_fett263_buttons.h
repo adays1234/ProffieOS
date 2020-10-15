@@ -67,7 +67,8 @@
 //
 // FETT263_SWING_ON_NO_BM
 // To enable Swing On Ignition control but not activate Battle Mode
-// (Cannot be used with FETT263_SWING_ON, FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
+// (Combine with FETT263_SWING_ON or FETT263_SWING_ON_PREON, 
+// cannot be used with FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
 //
 // FETT263_SWING_ON_SPEED 250
 // Adjust Swing Speed required for Ignition 250 ~ 500 recommended
@@ -85,7 +86,8 @@
 //
 // FETT263_TWIST_ON_NO_BM
 // To enable Twist On Ignition control but not activate Battle Mode
-// (Cannot be used with FETT263_TWIST_ON, FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
+// (Combine with FETT263_TWIST_ON or FETT263_TWIST_ON_PREON, 
+// cannot be used with FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
 //
 // FETT263_STAB_ON
 // To enable Stab On Ignition control (automatically enters Battle Mode, uses Fast On)
@@ -97,7 +99,8 @@
 //
 // FETT263_STAB_ON_NO_BM
 // To enable Stab On Ignition control but not activate Battle Mode
-// (Cannot be used with FETT263_STAB_ON, FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
+// (Combine with FETT263_STAB_ON or FETT263_STAB_ON_PREON, 
+// cannot be used with FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
 //
 // FETT263_THRUST_ON
 // To enable Thrust On Ignition control (automatically enters Battle Mode, uses Fast On)
@@ -108,7 +111,9 @@
 // Disables Fast On ignition for Thrust On so Preon is used (cannot be used with FETT263_THRUST_ON)
 //
 // FETT263_THRUST_ON_NO_BM
-// To enable Thrust On Ignition control but not activate Battle Mode (works with THRUST_ON_PREON only)
+// To enable Thrust On Ignition control but not activate Battle Mode 
+// (Combine with FETT263_THRUST_ON or FETT263_THRUST_ON_PREON, 
+// cannot be used with FETT263_BATTLE_MODE_ALWAYS_ON or FETT263_BATTLE_MODE_START_ON)
 //
 // FETT263_FORCE_PUSH
 // To enable gesture controlled Force Push during Battle Mode
@@ -251,10 +256,15 @@ SaberFett263Buttons() : PropBase() {}
 
       // EVENT_PUSH
       if (fabs(mss.x) < 3.0 &&
-          mss.y * mss.y + mss.z * mss.z > 120 &&
+          mss.y * mss.y + mss.z * mss.z > 100 &&
           fusor.swing_speed() < 30 &&
           fabs(fusor.gyro().x) < 10) {
-        Event(BUTTON_NONE, EVENT_PUSH);
+        if (millis() - push_begin_millis_ > 10) {
+          Event(BUTTON_NONE, EVENT_PUSH);
+          push_begin_millis_ = millis();
+        } 
+      } else {
+        push_begin_millis_ = millis();
       }
 
     } else {
@@ -268,9 +278,14 @@ SaberFett263Buttons() : PropBase() {}
       }
       // EVENT_THRUST
       if (mss.y * mss.y + mss.z * mss.z < 16.0 &&
-        mss.x > 14  &&
-        fusor.swing_speed() < 150) {
-        Event(BUTTON_NONE, EVENT_THRUST);
+          mss.x > 14  &&
+          fusor.swing_speed() < 150) {
+        if (millis() - thrust_begin_millis_ > 50) {
+          Event(BUTTON_NONE, EVENT_THRUST);
+          thrust_begin_millis_ = millis();
+        } 
+      } else {
+        thrust_begin_millis_ = millis();
       }
     }
   }
@@ -768,6 +783,8 @@ private:
   bool auto_lockup_on_ = false;
   bool auto_melt_on_ = false;
   bool battle_mode_ = false;
+  uint32_t thrust_begin_millis_ = millis();
+  uint32_t push_begin_millis_ = millis();
   uint32_t clash_impact_millis_ = millis();
   uint32_t last_twist_ = millis();
   uint32_t last_push_ = millis();
