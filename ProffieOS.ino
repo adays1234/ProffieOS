@@ -33,6 +33,7 @@
 // #define CONFIG_FILE "config/td_proffieboard_config.h"
 // #define CONFIG_FILE "config/teensy_audio_shield_micom.h"
 // #define CONFIG_FILE "config/proffieboard_v2_ob4.h"
+// #define CONFIG_FILE "config/testconfig.h"
 
 #ifdef CONFIG_FILE_TEST
 #undef CONFIG_FILE
@@ -47,6 +48,7 @@
 #define SAVE_VOLUME
 #define SAVE_PRESET
 #define SAVE_COLOR_CHANGE
+#define SAVE_DYNAMIC_DIMMING
 #endif
 
 // #define ENABLE_DEBUG
@@ -295,6 +297,10 @@ SaberBase::ColorChangeMode SaberBase::color_change_mode_ =
 bool SaberBase::on_ = false;
 uint32_t SaberBase::last_motion_request_ = 0;
 uint32_t SaberBase::current_variation_ = 0;
+float SaberBase::sound_length = 0.0;
+#ifdef DYNAMIC_BLADE_DIMMING
+int SaberBase::dimming_ = 16384;
+#endif
 
 #include "common/box_filter.h"
 
@@ -435,6 +441,9 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "functions/marble.h"
 #include "functions/slice.h"
 #include "functions/mult.h"
+#include "functions/wavlen.h"
+#include "functions/effect_position.h"
+#include "functions/time_since_effect.h"
 
 // transitions
 #include "transitions/fade.h"
@@ -473,6 +482,7 @@ class NoLED;
 #include "styles/style_parser.h"
 #include "styles/length_finder.h"
 #include "styles/show_color.h"
+#include "styles/blade_shortener.h"
 
 BladeConfig* current_config = nullptr;
 class BladeBase* GetPrimaryBlade() {
@@ -1545,8 +1555,7 @@ StaticWrapper<SerialCommands> serial_commands;
 
 #endif
 
-
-#if defined(ENABLE_MOTION) || defined(ENABLE_SSD1306)
+#if defined(ENABLE_MOTION) || defined(ENABLE_SSD1306) || defined(INCLUDE_SSD1306)
 #include "common/i2cdevice.h"
 I2CBus i2cbus;
 #endif
@@ -1555,6 +1564,11 @@ I2CBus i2cbus;
 #include "display/ssd1306.h"
 SSD1306 display;
 #endif
+
+#ifdef INCLUDE_SSD1306
+#include "display/ssd1306.h"
+#endif
+
 
 #ifdef ENABLE_MOTION
 
@@ -1718,3 +1732,8 @@ void loop() {
 #endif
   Looper::DoLoop();
 }
+
+#define CONFIG_BOTTOM
+#include CONFIG_FILE
+#undef CONFIG_BOTTOM
+
