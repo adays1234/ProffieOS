@@ -227,7 +227,11 @@ public:
         memset(frame_buffer_, 0, sizeof(frame_buffer_));
         // DrawText("==SabeR===", 0,15, Starjedi10pt7bGlyphs);
         // DrawText("++Teensy++",-4,31, Starjedi10pt7bGlyphs);
-        DrawText("proffieos", 0,15, Starjedi10pt7bGlyphs);
+	if (WIDTH < 128) {
+	  DrawText("p-os", 0,15, Starjedi10pt7bGlyphs);
+	} else {
+	  DrawText("proffieos", 0,15, Starjedi10pt7bGlyphs);
+	}
         DrawText(version,0,31, Starjedi10pt7bGlyphs);
 	if (HEIGHT > 32) {
 	  DrawText("installed: ",0,47, Starjedi10pt7bGlyphs);
@@ -244,11 +248,11 @@ public:
         DrawBatteryBar(BatteryBar16);
 	if (HEIGHT > 32) {
 	  char tmp[32];
-	  strcpy(tmp, "volts: x.xx");
+	  strcpy(tmp, "volts x.xx");
 	  float v = battery_monitor.battery();
-	  tmp[7] = '0' + (int)floorf(v);
-	  tmp[9] = '0' + ((int)floorf(v * 10)) % 10;
-	  tmp[10] = '0' + ((int)floorf(v * 100)) % 10;
+	  tmp[6] = '0' + (int)floorf(v);
+	  tmp[8] = '0' + ((int)floorf(v * 10)) % 10;
+	  tmp[9] = '0' + ((int)floorf(v * 100)) % 10;
 	  DrawText(tmp,0,55, Starjedi10pt7bGlyphs);
 	}
         layout_ = LAYOUT_NATIVE;
@@ -425,21 +429,27 @@ public:
 
     Send(SETDISPLAYOFFSET);              // 0xD3
     Send(0x0);                                   // no offset
-    Send(SETSTARTLINE | 0x0);            // line #0
+
+    Send(SETSTARTLINE | 0x0);            // 0x40 line #0
+
     Send(CHARGEPUMP);                    // 0x8D
     Send(0x14);
+
     Send(MEMORYMODE);                    // 0x20
     Send(0x01);                          // vertical address mode
-    #ifndef OLED_FLIP_180		 // normal OLED operation
-    Send(SEGREMAP | 0x1);
+
+#ifndef OLED_FLIP_180
+    // normal OLED operation
+    Send(SEGREMAP | 0x1);        // 0xa0 | 1
     Send(COMSCANDEC);
-    #else				 // allows for 180deg rotation of the OLED mapping
+#else
+    // allows for 180deg rotation of the OLED mapping
     Send(SEGREMAP);
     Send(COMSCANINC);
-    #endif
+#endif
 
     Send(SETCOMPINS);                    // 0xDA
-    if (HEIGHT == 64) {
+    if (HEIGHT == 64 || WIDTH==64) {
       Send(0x12);
     } else {
       Send(0x02);  // may need to be 0x12 for some displays
@@ -471,24 +481,12 @@ public:
       frame_available_ = false;
 
       Send(COLUMNADDR);
-      Send(0);   // Column start address (0 = reset)
-      Send(WIDTH-1); // Column end address (127 = reset)
+      Send((128 - WIDTH)/2);   // Column start address (0 = reset)
+      Send(WIDTH-1 + (128 - WIDTH)/2); // Column end address (127 = reset)
 
       Send(PAGEADDR);
       Send(0); // Page start address (0 = reset)
-      switch (HEIGHT) {
-        case 64:
-          Send(7); // Page end address
-          break;
-        case 32:
-          Send(3); // Page end address
-          break;
-        case 16:
-          Send(1); // Page end address
-          break;
-        default:
-          STDOUT.println("Unknown display height");
-      }
+      Send(sizeof(col_t) - 1);
 
       //STDOUT.println(TWSR & 0x3, DEC);
 
@@ -512,8 +510,8 @@ public:
               }
               break;
             case LAYOUT_LANDSCAPE: {
-              int x = i * sizeof(col_t);
-              int y = ((i & 3) << 3) + 7;
+              int x = i / sizeof(col_t);
+              int y = ((i & (sizeof(col_t)-1)) << 3) + 7;
               int delta_pos = -WIDTH / 8;
               if (invert_y_) {
                 y = HEIGHT - 1 - y;

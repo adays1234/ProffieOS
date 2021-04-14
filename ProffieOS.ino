@@ -298,6 +298,7 @@ bool SaberBase::on_ = false;
 uint32_t SaberBase::last_motion_request_ = 0;
 uint32_t SaberBase::current_variation_ = 0;
 float SaberBase::sound_length = 0.0;
+float SaberBase::clash_strength_ = 0.0;
 #ifdef DYNAMIC_BLADE_DIMMING
 int SaberBase::dimming_ = 16384;
 #endif
@@ -418,6 +419,7 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "styles/transition_effect.h"
 #include "styles/transition_loop.h"
 #include "styles/effect_sequence.h"
+#include "styles/color_select.h"
 
 // functions
 #include "functions/ifon.h"
@@ -458,6 +460,9 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "transitions/random.h"
 #include "transitions/colorcycle.h"
 #include "transitions/wave.h"
+#include "transitions/select.h"
+#include "transitions/extend.h"
+#include "transitions/center_wipe.h"
 
 #include "styles/legacy_styles.h"
 //responsive styles
@@ -822,6 +827,14 @@ class Commands : public CommandParser {
     }
 #endif // ENABLE_DEVELOPER_COMMANDS
 #endif
+
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "sleep") && e) {
+      delay(atoi(e));
+      return true;
+    }
+#endif
+
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "twiddle")) {
       int pin = strtol(e, NULL, 0);
@@ -990,6 +1003,12 @@ class Commands : public CommandParser {
       stm32l4_system_dfu();
       return true;
     }
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "dumpfusor")) {
+      fusor.dump();
+      return true;
+    }
+#endif
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "stm32info")) {
       STDOUT.print("VBAT: ");
